@@ -77,12 +77,6 @@ bool Connection::connect(const std::string &bind_dn,
       log_warning("ldap_set_option(LDAP_OPT_RESTART, LDAP_OPT_ON)", err);
     }
 
-    err = ldap_set_option(ldap_, LDAP_OPT_X_TLS_NEWCTX, LDAP_OPT_ON);
-    if (err != LDAP_OPT_SUCCESS) {
-      log_error("ldap_set_option(LDAP_OPT_X_TLS_NEWCTX)", err);
-      return false;
-    }
-
     if (ca_path_.size() == 0) {
       int reqCert = LDAP_OPT_X_TLS_NEVER;
       err = ldap_set_option(ldap_, LDAP_OPT_X_TLS_REQUIRE_CERT, &reqCert);
@@ -98,6 +92,12 @@ bool Connection::connect(const std::string &bind_dn,
         log_error("ldap_set_option(LDAP_OPT_X_TLS_CACERTFILE)", err);
         return false;
       }
+    }
+
+    err = ldap_set_option(ldap_, LDAP_OPT_X_TLS_NEWCTX, LDAP_OPT_ON);
+    if (err != LDAP_OPT_SUCCESS) {
+      log_error("ldap_set_option(LDAP_OPT_X_TLS_NEWCTX)", err);
+      return false;
     }
 
     if (use_tls_) {
@@ -276,7 +276,7 @@ std::list<std::string> Connection::search_groups(
 
 std::string Connection::get_ldap_uri() {
   std::ostringstream str_stream;
-  str_stream << (use_ssl_ || use_tls_ ? "ldaps://" : "ldap://") << ldap_host_
+  str_stream << (use_ssl_ ? "ldaps://" : "ldap://") << ldap_host_
              << ":" << ldap_port_;
   return str_stream.str();
 }
